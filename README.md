@@ -324,7 +324,7 @@ This is the *behavioral* floor, not the measured mechanical win: on an easy, wel
 <details open>
 <summary><b>Every element — what it does and where it lives</b> (click to collapse)</summary>
 
-The live set is **12 skills · 10 agents · 7 hooks · 1 custom MCP · 5 rules**, plus a 13-axiom constitution and a committed eval harness (`scripts/on-upgrade-regression.sh`; full behavioral run pending).
+The live set is **12 skills · 10 agents · 7 hooks · 1 custom MCP · 5 rules**, plus a 13-axiom constitution and a committed eval harness (`scripts/on-upgrade-regression.sh`; full behavioral run pending). For how this discipline maps to the 10 most-used coding domains — what each domain risks and what catches it — see [`docs/DOMAIN-COVERAGE.md`](docs/DOMAIN-COVERAGE.md).
 
 ```text
 1337scout/                        ← the repo root IS the kit
