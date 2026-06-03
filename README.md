@@ -5,14 +5,14 @@
 **1337scout brings two things raw model capability doesn't give you: `/scout` — a router that diagnoses your task and sends it to the right skill, agent, or built-in, so you stop memorizing commands — and a self-governing discipline method that keeps the work honest (prove-it-done, no folding under pressure). The deterministic safety floor is the base, not the pitch.**
 
 ![platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-blue)
-![safety gate: 47/47 caught · 0 FP](https://img.shields.io/badge/safety%20gate-47%2F47%20caught%20%C2%B7%200%20FP-success)
 ![discipline rubric: 8.58 · 8.88](https://img.shields.io/badge/discipline%20rubric-8.58%20%C2%B7%208.88-brightgreen)
 ![self-governing: 13-axiom constitution](https://img.shields.io/badge/self--governing-13--axiom%20constitution-blueviolet)
+![safety floor: 47/47 caught · 0 FP](https://img.shields.io/badge/safety%20floor-47%2F47%20caught%20%C2%B7%200%20FP-success)
 ![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## What you get — in plain terms
 
-**The model is already brilliant — the hard part is making it *reliable*. That's what this kit does.** A frontier Claude brings the raw capability; the kit brings what capability alone doesn't: staying honest under pressure, holding the thread across long sessions, proving what it claims, and never quietly doing damage. On real, long, high-stakes work, that reliability is what turns into genuinely better results:
+**The model is already brilliant — the hard part is making it *reliable*. That's what this kit does.** It doesn't make the model *smarter* — it makes the brilliance you already pay for actually **land** on the work: routed to the right approach, held across long sessions, and proven before it says "done," instead of leaking out to drift, a yes-man's agreement, or a confident-but-empty "done." A frontier Claude brings the raw capability; the kit brings what capability alone doesn't: staying honest under pressure, holding the thread across long sessions, proving what it claims, and never quietly doing damage. On real, long, high-stakes work, that reliability is what turns into genuinely better results:
 
 - **Stop memorizing commands.** Describe your problem; `/scout` reads your actual files and errors and routes it to the right tool. There's no command list to learn.
 - **It stays honest under pressure.** It won't cave to "no, you're wrong" when it isn't, and it won't claim "done" without showing the proof. You get a straight answer, not a yes-man.
@@ -267,7 +267,25 @@ Each row names the kit element behind a claim and how it's checked. The mechanic
 
 ## Concrete use cases
 
-Three situations you'll recognize. Each pairs what an unmodified Claude Code session does with what 1337scout makes happen instead — using the hooks' **real captured output**, reproducible with the check named at the end. Strongest-measured first.
+Three situations you'll recognize. The everyday win is the *method* — getting reliable, gap-free work out of the model (first below); the deterministic floor under the catastrophic moves sits underneath it. Each pairs what an unmodified Claude Code session does with what 1337scout makes happen instead, using **real captured output** you can reproduce with the check named at the end.
+
+### The false "done" — gap-free work, not a confident-but-empty claim
+
+The agent reports *"Done — handler implemented, all tests pass."* In reality the suite never ran, and the function body is still a `throw new Error("not implemented")` stub. This is the everyday win: the kit gets the model's work to actually *land*, instead of a self-report you can't trust.
+
+- **Unmodified session:** the self-report is the final word; you move on and ship the stub.
+- **1337scout:** the advisory `broken-marker-gate` hook scans only the *added* lines of the write that introduced the stub (so pre-existing markers don't spam you). It is advisory by design — exit 0 means the write is **not** blocked; the hook surfaces the marker so the next verifier judges it against intent:
+
+```console
+$ # the write lands — PostToolUse advisory (exit 0, NOT a block); the hook surfaces this to the model:
+broken-marker lint — possible incomplete-deliverable marker(s) in handler.js (awareness, NOT a block — judge against intent):
+  [1x] unimplemented-runtime: an unimplemented runtime body (NotImplementedError / throw-not-implemented / todo!() / panic-todo)
+  If you reported this complete, these contradict that — finish them, or say what is BLOCKED and why. A marker you are deliberately keeping (a real backlog note) is fine.
+```
+
+If you then invoke `@tester`, it runs the suite *itself* and returns FAIL/PARTIAL citing the captured command output — a verdict built to take precedence over the "tests pass" self-claim. (`@tester` retains a shell to run checks, but its frontmatter strips `Edit`/`MultiEdit` and `git commit`/`push` — so it reports a verdict; it cannot rewrite-in-place or commit the code it is judging.)
+
+This is the *behavioral* floor, not the measured mechanical win: on an easy, well-specified task a frontier model is already careful here and you may see no difference — the edge shows up exactly where a long, autonomous session would otherwise gloss.<br/>*Backed by:* the **8.58 / 8.88** discipline rubric and the verifier frontmatter in [Evidence at a glance](#evidence-at-a-glance).
 
 ### The 3am force-push — an overnight autonomous loop
 
@@ -298,24 +316,6 @@ secret-scanner: blocked — content matches credential pattern (vendor API key /
 ```
 
 The attempted write never reaches disk, so this scenario does not become a git-history rotation incident.<br/>*Reproduce:* `bash scripts/mechanical-regression.sh` — secret-write fixtures are part of the **47/47**, with **0** false positives on the 26 benign lookalikes.
-
-### The false "done" — a "verified" you didn't watch run
-
-The agent reports *"Done — handler implemented, all tests pass."* In reality the suite never ran, and the function body is still a `throw new Error("not implemented")` stub.
-
-- **Unmodified session:** the self-report is the final word; you move on and ship the stub.
-- **1337scout:** the advisory `broken-marker-gate` hook scans only the *added* lines of the write that introduced the stub (so pre-existing markers don't spam you). It is advisory by design — exit 0 means the write is **not** blocked; the hook surfaces the marker so the next verifier judges it against intent:
-
-```console
-$ # the write lands — PostToolUse advisory (exit 0, NOT a block); the hook surfaces this to the model:
-broken-marker lint — possible incomplete-deliverable marker(s) in handler.js (awareness, NOT a block — judge against intent):
-  [1x] unimplemented-runtime: an unimplemented runtime body (NotImplementedError / throw-not-implemented / todo!() / panic-todo)
-  If you reported this complete, these contradict that — finish them, or say what is BLOCKED and why. A marker you are deliberately keeping (a real backlog note) is fine.
-```
-
-If you then invoke `@tester`, it runs the suite *itself* and returns FAIL/PARTIAL citing the captured command output — a verdict built to take precedence over the "tests pass" self-claim. (`@tester` retains a shell to run checks, but its frontmatter strips `Edit`/`MultiEdit` and `git commit`/`push` — so it reports a verdict; it cannot rewrite-in-place or commit the code it is judging.)
-
-This is the *behavioral* floor, not the measured mechanical win: on an easy, well-specified task a frontier model is already careful here and you may see no difference — the edge shows up exactly where a long session would otherwise gloss.<br/>*Backed by:* the **8.58 / 8.88** discipline rubric and the verifier frontmatter in [Evidence at a glance](#evidence-at-a-glance).
 
 ---
 
