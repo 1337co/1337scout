@@ -12,23 +12,28 @@ const path = require('path');
 
 const PKG_ROOT = path.join(__dirname, '..');
 // The kit = enforcement + governance files copied into the target project root.
-// README is NOT scaffolded by default (it would clobber the user's own README);
-// --with-readme drops it as 1337scout-README.md.
-const KIT_ITEMS = ['.claude', 'CLAUDE.md', '.mcp.json', 'docs', 'scripts', 'LICENSE'];
-const GUARD_ITEMS = ['.claude', 'CLAUDE.md']; // refuse to clobber these without --force
+// README and LICENSE are NOT scaffolded: README would clobber the user's own
+// (--with-readme drops it as 1337scout-README.md), and the kit's MIT LICENSE
+// belongs in the npm package / repo, never overwriting a project's own LICENSE.
+const KIT_ITEMS = ['.claude', 'CLAUDE.md', '.mcp.json', 'docs', 'scripts'];
+// Refuse to overwrite ANY existing kit item without --force — the kit's own
+// blast-radius discipline applied to its installer: never silently clobber a
+// file (docs/, scripts/, .mcp.json, …) the target project may already have.
+const GUARD_ITEMS = KIT_ITEMS;
 
 const HELP = `1337scout — scaffold a discipline-first Claude Code kit into a project.
 
 Usage:
   npx 1337scout [target-dir] [options]
 
-Copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/, LICENSE into the target
+Copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/ into the target
 directory (default: the current directory). Then open a Claude Code session at
 that directory — the PreToolUse safety hooks activate automatically.
+Requires bash + python3 on PATH (the hooks' parser + the harness).
 
 Options:
   -n, --dry-run      Show what would be written; change nothing.
-  -f, --force        Overwrite an existing .claude/ or CLAUDE.md (default: refuse).
+  -f, --force        Overwrite if any of those items already exist (default: refuse).
       --with-readme  Also copy the kit README as 1337scout-README.md.
   -h, --help         Show this help.
 
@@ -88,6 +93,7 @@ function main() {
   console.log('\n[1337scout] installed. Next:');
   console.log('  claude                                  # open a session here; hooks fire automatically');
   console.log('  bash scripts/mechanical-regression.sh   # prove the safety floor is live (24/24)');
+  console.log('  note: the hooks need bash + python3 on PATH; without them they fail closed (block).');
   return 0;
 }
 

@@ -27,6 +27,20 @@ const MAX_FIELD = 8192;     // summary / evidence length cap
 const DEFAULT_LIMIT = 100, MAX_LIMIT = 1000;
 
 function rpcErr(code, message) { const e = new Error(message); e.code = code; return e; }
+
+// Secret guard. A receipt records an OBSERVABLE, never a credential value. This append is a
+// disk-write path that does NOT pass through the PreToolUse secret-scanner hook (that hook only
+// sees Write|Edit|MultiEdit tool calls), so the high-confidence credential shapes are rejected
+// here too — keeping "no secret reaches disk" true for this path. Focused subset of the hooks'
+// secret patterns (vendor key / private key / AWS secret / DSN-with-password); reject, don't store.
+const SECRET_RX = [
+  /(^|[^A-Za-z0-9_])(AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|gh[opsur]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40,}|sk-(ant|proj|or)-[A-Za-z0-9_-]{16,}|[sr]k_live_[A-Za-z0-9]{16,}|xox[bpasr]-[A-Za-z0-9-]{10,}|AIza[0-9A-Za-z_-]{35}|glpat-[A-Za-z0-9_-]{20}|hf_[A-Za-z0-9]{34}|eyJ[A-Za-z0-9_=-]{8,}\.eyJ[A-Za-z0-9_=-]{8,}\.[A-Za-z0-9_=-]{6,})/,
+  /-----BEGIN [A-Z ]*PRIVATE KEY-----/,
+  /aws_secret_access_key[\s"'=:]{0,4}[A-Za-z0-9/+]{20,}/i,
+  /[a-z][a-z0-9+.-]*:\/\/[^:@/\s]+:[^@/\s]{2,}@/,
+];
+function looksLikeSecret(s) { return SECRET_RX.some((rx) => rx.test(s)); }
+
 function appendReceipt(r) { fs.mkdirSync(STATE_DIR, { recursive: true }); fs.appendFileSync(LEDGER, JSON.stringify(r) + '\n'); }
 function readReceipts() {
   try {
@@ -71,6 +85,8 @@ function runTool(name, args) {
       throw rpcErr(-32602, 'summary and evidence are required non-empty strings');
     if (args.summary.length > MAX_FIELD || args.evidence.length > MAX_FIELD)
       throw rpcErr(-32602, 'summary/evidence exceed ' + MAX_FIELD + ' chars');
+    if (looksLikeSecret(args.summary) || looksLikeSecret(args.evidence))
+      throw rpcErr(-32602, 'receipt appears to contain a secret value — record the observable (a hash, path, count, or PASS/FAIL line), never the credential itself');
     const r = { ts: new Date().toISOString(), kind: args.kind, summary: args.summary, evidence: args.evidence };
     appendReceipt(r);
     return { content: [{ type: 'text', text: 'recorded ' + JSON.stringify(r) }] };
