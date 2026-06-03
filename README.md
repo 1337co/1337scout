@@ -10,25 +10,15 @@
 ![hook latency: <1s](https://img.shields.io/badge/hook%20latency-778%2F886ms%20%3C1s-blue)
 ![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
-```console
-$ # the agent tries to wipe the disk — the hook stops it before it runs:
-$ rm -rf /
-boundary-guard: blocked — recursive rm on absolute / home / parent / glob scope.   [exit 2]
+## What you get — in plain terms
 
-$ # prove the whole layer is live (asserts exit codes, not prose):
-$ bash scripts/mechanical-regression.sh
-mechanical-regression: defect-catch 24/24, benign-allow 10/10
-Status: PASS — mechanical safety layer fires on every defect, zero false positives.
-```
-
-## 30-second TL;DR
-
-- **Route, don't memorize:** `/scout` diagnoses your task from your real files and errors, then hands it to the right skill, agent, or Claude built-in — or just does it when nothing fits.
-- **Discipline that holds:** prove-it-done, hold-under-pressure (no folding to "you're right"), scope control, and read-only verification — a reliability floor for long, autonomous, and high-stakes work.
-- **Self-governing:** a 13-axiom constitution governs the kit's own evolution, and `/kit-audit` is built to *fail* the kit, not flatter it.
-- **Lean by construction:** a small always-on kernel; the 12 skills + 10 agents load their bodies only when invoked, and heavy work runs in an isolated context — the kit stays off your token budget until you use a piece of it.
-- **Hard floor underneath:** `PreToolUse` hooks block destructive commands and secret-writes *before* they run — **24/24** caught, **0** false positives, in `<1s`. The dependable base, re-runnable on demand.
-- **Honest limit:** on moderate prompts the prose-discipline edge over a clean frontier model is ~edge-absent; the clean *measured* win is the mechanical floor. No "9+/perfect" claim.
+- **Stop memorizing commands.** Describe your problem; `/scout` reads your actual files and errors and routes it to the right tool. There's no command list to learn.
+- **It stays honest under pressure.** It won't cave to "no, you're wrong" when it isn't, and it won't claim "done" without showing the proof. You get a straight answer, not a yes-man.
+- **It doesn't lose the plot in long sessions.** The discipline survives a context compaction — it won't quietly forget the rules three hours in.
+- **Your rules actually stick.** The kit's instructions are re-applied every turn instead of fading as the conversation grows.
+- **It stays out of your way.** Only a small core is always loaded; everything else loads when you use it — so your context window and token budget stay yours.
+- **A hard floor underneath.** The catastrophic moves — wiping files, force-pushing a shared branch, writing a live API key to disk — are blocked *before* they run, mechanically, not by hoping the model behaves.
+- **Honest about its limits.** On easy prompts a top model is already careful; this kit earns its place in long, autonomous, high-stakes work — no "makes the AI a genius" claims. The clean, measured win is that safety floor.
 
 > **Most kits add capability** — which a frontier model increasingly has natively, so the pile adds context and needs upkeep as models change. **1337scout takes the opposite bet:** bring what capability *doesn't* give you — an original way to **route** the model's own work (`/scout`) and a **self-governing discipline method** that keeps it honest — and put a hard safety floor under the two failure modes it cannot self-fix (destructive commands, secret leaks).
 
@@ -106,7 +96,7 @@ flowchart LR
     class NO danger
 ```
 
-The verifier does not edit the work it judges; its verdict is based on observable state and takes precedence over the executor's self-report.
+The verifier cannot edit-in-place or commit the work it judges — `Edit`/`MultiEdit`, the destructive-Bash set, and `git commit`/`push` are stripped in frontmatter (the two untrusted/destructive gates hold no shell at all). The `Write` it retains is for its own verdict report, not the reviewed code. Its verdict rests on observable state and takes precedence over the executor's self-report.
 
 ### 4 · Self-governance and self-falsification
 
