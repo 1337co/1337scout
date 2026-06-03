@@ -24,7 +24,7 @@ body:
     id: kit-version
     attributes:
       label: Kit version
-      placeholder: "1337scout@0.1.2"
+      placeholder: "1337scout@0.2.0"
     validations:
       required: true
   - type: input

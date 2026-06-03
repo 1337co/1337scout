@@ -124,7 +124,7 @@ function handle(msg) {
   if (method === 'initialize') {
     const req = msg.params && msg.params.protocolVersion;
     const version = SUPPORTED.includes(req) ? req : SUPPORTED[0];
-    return ok(id, { protocolVersion: version, capabilities: { tools: {} }, serverInfo: { name: 'evidence-ledger', version: '0.1.0' } });
+    return ok(id, { protocolVersion: version, capabilities: { tools: {} }, serverInfo: { name: 'evidence-ledger', version: '0.2.0' } });
   }
   if (method === 'tools/list') return ok(id, { tools: TOOLS });
   if (method === 'tools/call') {

@@ -38,7 +38,7 @@ Options:
   -h, --help         Show this help.
 
 Nothing is downloaded — every file ships inside this package. Pin a version for
-reproducible installs, e.g.  npx 1337scout@0.1.2`;
+reproducible installs, e.g.  npx 1337scout@0.2.0`;
 
 function parseArgs(argv) {
   const a = { target: null, force: false, dryRun: false, help: false, withReadme: false };

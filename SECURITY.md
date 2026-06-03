@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Supported versions
-1337scout ships on npm (`npx 1337scout`) and is developed on GitHub. Only the latest published version (currently the `0.1.x` line) receives security fixes. Pin for reproducible installs: `npx 1337scout@0.1.2`.
+1337scout ships on npm (`npx 1337scout`) and is developed on GitHub. Only the latest published version (currently the `0.2.x` line) receives security fixes. Pin for reproducible installs: `npx 1337scout@0.2.0`.
 
 ## Reporting a vulnerability
 Report security issues **privately** — please do not open a public issue for a vulnerability.
