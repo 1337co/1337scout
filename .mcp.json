@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "evidence-ledger": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/.claude/mcp/evidence-ledger/server.js"]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "name": "1337scout",
+  "version": "0.1.2",
+  "description": "A discipline-first Claude Code .claude/ kit: /scout diagnoses your task and routes by purpose (not a hardcoded table); a self-governing 13-axiom discipline method keeps work honest; read-only verifier agents and a deterministic safety floor (blocks destructive commands & secret-writes, 24/24 caught, 0 FP) sit beneath. Scaffolds in via npx 1337scout.",
+  "bin": {
+    "1337scout": "bin/install.js"
+  },
+  "files": [
+    ".claude",
+    "CLAUDE.md",
+    ".mcp.json",
+    "docs",
+    "scripts",
+    "bin",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "claude-code",
+    "claude",
+    "hooks",
+    "safety",
+    "guardrails",
+    "agents",
+    "anthropic",
+    "kit"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/1337co/1337scout#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1337co/1337scout.git"
+  },
+  "bugs": {
+    "url": "https://github.com/1337co/1337scout/issues"
+  },
+  "engines": {
+    "node": ">=16.7"
+  }
+}

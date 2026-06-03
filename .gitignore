@@ -1,0 +1,41 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Backups / temp / scratch
+*.bak
+*.bak.*
+*.tmp
+*.orig
+
+# Kit runtime state (hooks write to $HOME/.kit-state; guard against local copies)
+.kit-state/
+# Evidence-ledger MCP receipts + on-upgrade eval-harness run artifacts (runtime output, never commit)
+.claude/state/
+regression/runs/
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+id_rsa
+id_ed25519
+secrets.json
+secrets.yaml
+secrets.yml
+secrets.txt
+credentials.json
+credentials.yaml
+credentials.yml
+credentials.ini
+
+# npm packaging artifacts
+*.tgz
+node_modules/

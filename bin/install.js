@@ -1,0 +1,94 @@
+#!/usr/bin/env node
+'use strict';
+/*
+ * 1337scout installer — scaffolds the kit into a project directory.
+ * Zero dependencies (Node built-ins only). Fetches nothing from the network:
+ * every file ships inside this npm package. Refuses to overwrite an existing
+ * .claude/ or CLAUDE.md unless --force (the kit's own blast-radius discipline,
+ * applied to its own installer).
+ */
+const fs = require('fs');
+const path = require('path');
+
+const PKG_ROOT = path.join(__dirname, '..');
+// The kit = enforcement + governance files copied into the target project root.
+// README is NOT scaffolded by default (it would clobber the user's own README);
+// --with-readme drops it as 1337scout-README.md.
+const KIT_ITEMS = ['.claude', 'CLAUDE.md', '.mcp.json', 'docs', 'scripts', 'LICENSE'];
+const GUARD_ITEMS = ['.claude', 'CLAUDE.md']; // refuse to clobber these without --force
+
+const HELP = `1337scout — scaffold a discipline-first Claude Code kit into a project.
+
+Usage:
+  npx 1337scout [target-dir] [options]
+
+Copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/, LICENSE into the target
+directory (default: the current directory). Then open a Claude Code session at
+that directory — the PreToolUse safety hooks activate automatically.
+
+Options:
+  -n, --dry-run      Show what would be written; change nothing.
+  -f, --force        Overwrite an existing .claude/ or CLAUDE.md (default: refuse).
+      --with-readme  Also copy the kit README as 1337scout-README.md.
+  -h, --help         Show this help.
+
+Nothing is downloaded — every file ships inside this package. Pin a version for
+reproducible installs, e.g.  npx 1337scout@0.1.0`;
+
+function parseArgs(argv) {
+  const a = { target: null, force: false, dryRun: false, help: false, withReadme: false };
+  for (const t of argv) {
+    if (t === '--force' || t === '-f') a.force = true;
+    else if (t === '--dry-run' || t === '-n') a.dryRun = true;
+    else if (t === '--help' || t === '-h') a.help = true;
+    else if (t === '--with-readme') a.withReadme = true;
+    else if (!t.startsWith('-') && a.target === null) a.target = t;
+    else { console.error(`[1337scout] unknown argument: ${t}`); return null; }
+  }
+  return a;
+}
+
+function main() {
+  if (typeof fs.cpSync !== 'function') {
+    console.error('[1337scout] needs Node >= 16.7 (fs.cpSync). Please upgrade Node.');
+    return 1;
+  }
+  const args = parseArgs(process.argv.slice(2));
+  if (args === null) { console.error('\n' + HELP); return 1; }
+  if (args.help) { console.log(HELP); return 0; }
+
+  const target = path.resolve(args.target || process.cwd());
+  if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) {
+    console.error(`[1337scout] target is not an existing directory: ${target}`);
+    return 1;
+  }
+
+  const conflicts = GUARD_ITEMS.filter((p) => fs.existsSync(path.join(target, p)));
+  if (conflicts.length && !args.force) {
+    console.error(`[1337scout] refusing to overwrite existing ${conflicts.join(', ')} in:`);
+    console.error(`            ${target}`);
+    console.error(`[1337scout] back them up, or re-run with --force. Use --dry-run to preview.`);
+    return 2;
+  }
+
+  const plan = KIT_ITEMS.filter((item) => fs.existsSync(path.join(PKG_ROOT, item)));
+  console.log(`[1337scout] ${args.dryRun ? 'DRY-RUN — would install' : 'installing'} into: ${target}`);
+  for (const item of plan) console.log(`  ${args.dryRun ? 'would copy ' : 'copy '} ${item}`);
+
+  if (args.dryRun) { console.log('[1337scout] dry-run only — nothing written.'); return 0; }
+
+  for (const item of plan) {
+    fs.cpSync(path.join(PKG_ROOT, item), path.join(target, item), { recursive: true });
+  }
+  if (args.withReadme) {
+    const readme = path.join(PKG_ROOT, 'README.md');
+    if (fs.existsSync(readme)) fs.copyFileSync(readme, path.join(target, '1337scout-README.md'));
+  }
+
+  console.log('\n[1337scout] installed. Next:');
+  console.log('  claude                                  # open a session here; hooks fire automatically');
+  console.log('  bash scripts/mechanical-regression.sh   # prove the safety floor is live (24/24)');
+  return 0;
+}
+
+process.exit(main());

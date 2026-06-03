@@ -1,0 +1,12 @@
+# Keep the published package to the kit itself — exclude runtime/state/dev artifacts.
+.claude/state/
+.kit-state/
+regression/
+**/__pycache__/
+**/*.pyc
+**/*.bak
+**/*.tmp
+**/*.orig
+.git/
+.gitattributes
+.github/
