@@ -298,7 +298,7 @@ npx 1337scout           # copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/
 claude                  # open a session here — the hooks fire automatically
 ```
 
-Refuses to overwrite an existing `.claude/` or `CLAUDE.md` (`--force` to override, `--dry-run` to preview). Pin for reproducible installs: `npx 1337scout@0.1.0`.
+Refuses to overwrite **any** existing kit item (`.claude/`, `CLAUDE.md`, `.mcp.json`, `docs/`, `scripts/`) — `--force` to override, `--dry-run` to preview. Pin for reproducible installs: `npx 1337scout@0.1.2`.
 
 **Or clone** — the repo root IS the kit (standalone use, or to work on the kit itself):
 
