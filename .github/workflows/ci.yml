@@ -23,7 +23,7 @@ jobs:
           node --check bin/install.js
           node --check .claude/mcp/evidence-ledger/server.js
 
-      - name: Mechanical safety regression (must catch 24/24, 0 false positives)
+      - name: Mechanical safety regression (must catch 47/47, 0 false positives)
         run: bash scripts/mechanical-regression.sh
 
       - name: Constitution / adapter drift lint (must exit 0)

@@ -1,7 +1,7 @@
 {
   "name": "1337scout",
   "version": "0.1.2",
-  "description": "A discipline-first Claude Code .claude/ kit: /scout diagnoses your task and routes by purpose (not a hardcoded table); a self-governing 13-axiom discipline method keeps work honest; read-only verifier agents and a deterministic safety floor (blocks destructive commands & secret-writes, 24/24 caught, 0 FP) sit beneath. Scaffolds in via npx 1337scout.",
+  "description": "A discipline-first Claude Code .claude/ kit: /scout diagnoses your task and routes by purpose (not a hardcoded table); a self-governing 13-axiom discipline method keeps work honest; read-only verifier agents and a deterministic safety floor (blocks destructive commands & secret-writes, 47/47 caught, 0 FP) sit beneath. Scaffolds in via npx 1337scout.",
   "bin": {
     "1337scout": "bin/install.js"
   },

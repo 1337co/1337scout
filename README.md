@@ -5,7 +5,7 @@
 **1337scout brings two things raw model capability doesn't give you: `/scout` — a router that diagnoses your task and sends it to the right skill, agent, or built-in, so you stop memorizing commands — and a self-governing discipline method that keeps the work honest (prove-it-done, no folding under pressure). The deterministic safety floor is the base, not the pitch.**
 
 ![platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-blue)
-![safety gate: 24/24 caught · 0 FP](https://img.shields.io/badge/safety%20gate-24%2F24%20caught%20%C2%B7%200%20FP-success)
+![safety gate: 47/47 caught · 0 FP](https://img.shields.io/badge/safety%20gate-47%2F47%20caught%20%C2%B7%200%20FP-success)
 ![discipline rubric: 8.58 · 8.88](https://img.shields.io/badge/discipline%20rubric-8.58%20%C2%B7%208.88-brightgreen)
 ![self-governing: 13-axiom constitution](https://img.shields.io/badge/self--governing-13--axiom%20constitution-blueviolet)
 ![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -75,7 +75,7 @@ claude
 
 ```bash
 bash scripts/mechanical-regression.sh    # prove the floor is live (asserts exit codes)
-# → defect-catch 24/24, benign-allow 10/10 — PASS
+# → defect-catch 47/47, benign-allow 26/26 — PASS
 ```
 
 Then drive it: `/scout` when the next step is unclear, or any skill directly (`/forge`, `/chart`, `/build`, `/debug`, `/tdd`). Skills are never auto-invoked — you call them.
@@ -250,18 +250,18 @@ What makes it ours, and why it helps you:
 
 ## Evidence at a glance
 
-Each row names the kit element behind a claim and how it's checked. The mechanical and drift rows are **re-runnable from this repo** on demand; the behavioral and latency numbers are **one-time internal measurements** — recorded here, but not reproducible from the committed files (unlike the 24/24).
+Each row names the kit element behind a claim and how it's checked. The mechanical and drift rows are **re-runnable from this repo** on demand; the behavioral and latency numbers are **one-time internal measurements** — recorded here, but not reproducible from the committed files (unlike the 47/47).
 
 | Claim | Kit element | Check | Result |
 | --- | --- | --- | --- |
-| Dangerous-command + secret-write blocking | `hooks/boundary-guard` · `hooks/secret-scanner` | `bash scripts/mechanical-regression.sh` — **re-runnable** | **24/24** caught · **0** FP on 10 benign |
+| Dangerous-command + secret-write blocking | `hooks/boundary-guard` · `hooks/secret-scanner` | `bash scripts/mechanical-regression.sh` — **re-runnable** | **47/47** caught · **0** FP on 26 benign |
 | No drift between law and adapters | `docs/KIT-CONSTITUTION.md` ↔ adapters | `bash scripts/adapter-sync-lint.sh` — **re-runnable** | EXIT 0 (0 critical / 0 warning) |
 | Verifier cannot rubber-stamp | `.claude/agents/*` frontmatter | inspect `disallowedTools` (on disk) | `Edit`/destructive-Bash stripped; **2 hold no shell** (`@migration-verifier`, `@untrusted-element-auditor`) |
 | Behavioral discipline floor | `CLAUDE.md` · `.claude/rules/` · `/scout` · verifier agents | multi-dimension discipline rubric — *one-time internal A/B, not reproducible from this repo* | **8.58** (an external-LLM reviewer) · **8.88** (mean of 3 independent, isolated Claude instances) |
-| Hook speed | same hooks | one-time latency measurement — *not committed as a re-runnable check* | **778 / 886 ms**, under `<1000 ms` |
+| Hook speed | same hooks | one-time latency measurement — *not committed as a re-runnable check* | **840 / 928 ms**, under `<1000 ms` |
 | Shipped-at-scale proof | field usage | — | **not yet claimed** |
 
-**What the 24/24 actually covers.** The harness fires **24 destructive / exfil / bypass payloads** and **10 benign look-alikes** at the `PreToolUse` hooks, asserting exit codes (every defect blocked with exit 2; every benign left untouched). The 24 fall into eight families: recursive/mass delete (`rm -rf`, `Remove-Item -Recurse`, `find … -delete`) · force history-overwrite (`git push --force`, `filter-branch`) · remote-code execution (`curl … | sh`) · raw-device / disk wipe (`dd`, `mkfs`) · fork bomb · SQL data-loss (`DROP`/`TRUNCATE`) · verification-gate bypass (`--no-verify`, disabling a lint rule) · secret-write + credential exfil (inline keys, `.env`/`.ssh`/`.netrc` reads, base64-pipe exfil). The 10 benign look-alikes are the false-positive guard — `DROP TABLESPACE` (not a table) · `.envoy.yaml` (not `.env`) · `rm -rf ./build/dist` (scoped, relative) · *enabling* strict mode · `git rebase` — so the matchers key on command *shape*, not evadable substrings. `/kit-audit` then seeds *fake* canaries and grades honestly: **PASS only if the hook itself fired**, `INCONCLUSIVE` (not a pass) on a generic model refusal, `CRITICAL FAIL` if a canary reaches disk.
+**What the 47/47 actually covers.** The harness fires **47 destructive / exfil / bypass payloads** and **26 benign look-alikes** at the `PreToolUse` hooks, asserting exit codes (every defect blocked with exit 2; every benign left untouched). The 47 fall into nine families: recursive/mass delete (`rm -rf`, `Remove-Item -Recurse`, `find … -delete`) · force history-overwrite (`git push --force`, `filter-branch`) · remote-code execution (`curl … | sh`) · raw-device / disk wipe (`dd`, `mkfs`) · fork bomb · SQL data-loss (`DROP`/`TRUNCATE`) · verification-gate bypass (`--no-verify`, disabling a lint rule) · secret-write + credential exfil (inline keys, `.env`/`.ssh`/`.netrc` reads, base64-pipe exfil) · destructive IaC / orchestration / cloud teardown (`terraform destroy`, `kubectl delete --all`/`-k`, `helm uninstall`, `pulumi destroy`/`stack rm`, `aws delete-*`/`terminate-instances`/`s3 rb`, `gcloud`/`gsutil`/`az` deletes — incl. compound `cd infra && …` and `-chdir=`/`-auto-approve` bypass forms). The 26 benign look-alikes are the false-positive guard — `DROP TABLESPACE` (not a table) · `.envoy.yaml` (not `.env`) · `rm -rf ./build/dist` (scoped, relative) · *enabling* strict mode · `git rebase` · `terraform plan -destroy` (a no-op plan) · `kubectl delete … --dry-run=server` (a preview) · `kubectl apply -f delete-old.yaml` (a *filename*, not a delete) — so the matchers key on command *shape* and *subcommand position*, not evadable substrings. `/kit-audit` then seeds *fake* canaries and grades honestly: **PASS only if the hook itself fired**, `INCONCLUSIVE` (not a pass) on a generic model refusal, `CRITICAL FAIL` if a canary reaches disk.
 
 ---
 
@@ -283,21 +283,21 @@ $ git push --force origin main
 boundary-guard: blocked — git push force-variant (remote history overwrite). …   [exit 2]
 ```
 
-Each message continues *"… requires explicit user confirmation. If intentional, re-invoke with scope-matching authorization."* — a hard stop that still tells the model how to proceed if the action was legitimate. A deterministic floor that does not depend on the model staying disciplined at 3am, and **one layer of three** (permission deny-list + the two safety hooks), not a sandbox.<br/>*Reproduce:* `bash scripts/mechanical-regression.sh` — these patterns are among the **24/24** seeded catches.
+Each message continues *"… requires explicit user confirmation. If intentional, re-invoke with scope-matching authorization."* — a hard stop that still tells the model how to proceed if the action was legitimate. A deterministic floor that does not depend on the model staying disciplined at 3am, and **one layer of three** (permission deny-list + the two safety hooks), not a sandbox.<br/>*Reproduce:* `bash scripts/mechanical-regression.sh` — these patterns are among the **47/47** seeded catches.
 
 ### The inlined API key — rushing before a demo
 
 Mid-rush to wire a third-party API, the agent drops a live key straight into `config.js` (`const PAYMENT_API_KEY = "<live secret key>"`) so the call "just works" — in a file about to be committed and pushed.
 
 - **Unmodified session:** the key lands on disk, then in git history, where rotation is the only remedy.
-- **1337scout:** the `secret-scanner` hook refuses the write before it touches disk. Patterns are format-anchored, so a password-policy doc or a lookalike like `AKIArmadillo` does not false-trip — the **0-FP-on-10-benign** result.
+- **1337scout:** the `secret-scanner` hook refuses the write before it touches disk. Patterns are format-anchored, so a password-policy doc or a lookalike like `AKIArmadillo` does not false-trip — the **0-FP-on-26-benign** result.
 
 ```console
 $ # agent tries to Write config.js with an inline live key
 secret-scanner: blocked — content matches credential pattern (vendor API key / token / JWT (anchored format)). Replace inline secret with an environment variable, secret-manager reference, or .env file (gitignored) before write. If a false positive, surface to the user for explicit override.   [exit 2]
 ```
 
-The attempted write never reaches disk, so this scenario does not become a git-history rotation incident.<br/>*Reproduce:* `bash scripts/mechanical-regression.sh` — secret-write fixtures are part of the **24/24**, with **0** false positives on the 10 benign lookalikes.
+The attempted write never reaches disk, so this scenario does not become a git-history rotation incident.<br/>*Reproduce:* `bash scripts/mechanical-regression.sh` — secret-write fixtures are part of the **47/47**, with **0** false positives on the 26 benign lookalikes.
 
 ### The false "done" — a "verified" you didn't watch run
 
@@ -452,8 +452,8 @@ The process-skill archetype is genuine: an independent author converged on nearl
 The honesty is the product, so the limits are as plain as the wins.
 
 1. **On a frontier model the prose-discipline edge over an unmodified session is ~edge-absent on moderate prompts** — measured first-hand in a hermetic A/B. A clean frontier model is already disciplined there. The kit raises the **floor** and resists specific named failures; it does **not** make the model smarter.
-2. **The one clean, deterministic, re-runnable win is the mechanical hook layer** (the 24/24). The behavioral win is real where the base model would otherwise gloss, but is suggestive (small-N), not a validated across-the-board claim — the full behavioral confirmatory pass at scale is built but not yet run.
-3. **The independent score is 8.58 / 8.88, with an honest measured ceiling of ~8.6 / ~9.0** — a one-time internal A/B, recorded but not reproducible from this repo (unlike the re-runnable 24/24). A clean ≥9 from every reviewer was triple-confirmed unreachable without faking — which the kit refuses. **No "9+ / perfect" claim.**
+2. **The one clean, deterministic, re-runnable win is the mechanical hook layer** (the 47/47). The behavioral win is real where the base model would otherwise gloss, but is suggestive (small-N), not a validated across-the-board claim — the full behavioral confirmatory pass at scale is built but not yet run.
+3. **The independent score is 8.58 / 8.88, with an honest measured ceiling of ~8.6 / ~9.0** — a one-time internal A/B, recorded but not reproducible from this repo (unlike the re-runnable 47/47). A clean ≥9 from every reviewer was triple-confirmed unreachable without faking — which the kit refuses. **No "9+ / perfect" claim.**
 4. **Single-platform by design** — the mechanical layer is Claude-Code-coupled; activation is opening the session at the kit root.
 5. **The hooks document their own residual gaps** and are explicitly **one layer of three** (permission deny-list + the two safety hooks) — none alone sufficient.
 

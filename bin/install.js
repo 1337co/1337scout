@@ -114,7 +114,7 @@ function main() {
 
   console.log('\n[1337scout] installed. Next:');
   console.log('  claude                                  # open a session here; hooks fire automatically');
-  console.log('  bash scripts/mechanical-regression.sh   # prove the safety floor is live (24/24)');
+  console.log('  bash scripts/mechanical-regression.sh   # prove the safety floor is live (47/47)');
   console.log('  note: the hooks need bash + python3 on PATH; without them they fail closed (block).');
   return 0;
 }

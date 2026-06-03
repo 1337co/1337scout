@@ -19,7 +19,7 @@ Please include a minimal reproduction and the affected version. We aim to acknow
 ## Scope & threat model (honest)
 1337scout is a **discipline + safety-floor kit, not a complete sandbox** — be precise about what it does and does not defend:
 
-- The two `PreToolUse` hooks block a defined set of destructive commands and secret-write patterns **before** they run, fail-CLOSED, verified by `bash scripts/mechanical-regression.sh` (24/24 seeded defects caught, 0 false positives on 10 benign).
+- The two `PreToolUse` hooks block a defined set of destructive commands and secret-write patterns **before** they run, fail-CLOSED, verified by `bash scripts/mechanical-regression.sh` (47/47 seeded defects caught, 0 false positives on 26 benign).
 - They are **one layer of three** (a permission deny/ask list + the two hooks), explicitly **not** a sandbox or an absolute guarantee. The hooks document their own residual gaps in-file (e.g. encoded secrets, sudo-wrapped device writes).
 - The kit's own scripts and hooks make **no network requests** — they read and pattern-match locally. (Claude Code's built-in `WebSearch`/`WebFetch` tools, which the kit leaves enabled, are a *separate* egress surface that the kit neither adds nor restricts — don't read "no network" as "Claude can't reach the web.") `npx 1337scout` fetches the package from the npm registry at install time only; nothing is fetched at runtime.
 

@@ -13,7 +13,7 @@ Thanks for considering a contribution. This kit is deliberately small and discip
 1. Open an issue describing the **demonstrated** failure your change prevents (with a reproduction if possible) — use the "Element / change proposal" template.
 2. For a new element, work through the Element Addition Test in `docs/KIT-CONSTITUTION.md`.
 3. Run `bash scripts/adapter-sync-lint.sh` — it must exit 0.
-4. If you touch a hook or the shared pattern library, run `bash scripts/mechanical-regression.sh` — it must pass (**24/24** caught, **0** false positives on 10 benign).
+4. If you touch a hook or the shared pattern library, run `bash scripts/mechanical-regression.sh` — it must pass (**47/47** caught, **0** false positives on 26 benign).
 5. Keep the diff scoped; document the "why" in the PR (the PR template carries the checklist).
 
 ## What gets declined

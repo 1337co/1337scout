@@ -62,7 +62,7 @@ fi
 # deliberate SUPERSET: over-broad only ever falls THROUGH to the full matchers (no safety loss); a MISSED
 # token would skip a real check, so mechanical-regression covers every matcher class to prove it complete.
 # A literal '>' / 'tee' keeps every redirect on the full path (the Bash credential-write backstop).
-if ! grep -qiE 'git|mkfs|wipefs|shred|blkdiscard|sgdisk|remove-item|rmdir|clear-disk|clear-content|format|filter-branch|filter-repo|reflog|stash|worktree|update-ref|powershell|pwsh|get-content|curl|wget|iwr|invoke-webrequest|invoke-restmethod|truncate|xargs|/dev/|secrets|credential|id_rsa|id_dsa|id_ecdsa|id_ed25519|\.env|\.pem|\.key|\.p12|\.pfx|\.ssh|\.netrc|\.aws|\.git-cred|\.docker|\.kube|gh/hosts|tee|>|:[[:space:]]*\(\)|(^|[^a-z])(rm|rd|ri|dd|del|drop|delete|erase|find)([^a-z]|$)' <<<"$CMD"; then
+if ! grep -qiE 'git|mkfs|wipefs|shred|blkdiscard|sgdisk|remove-item|rmdir|clear-disk|clear-content|format|filter-branch|filter-repo|reflog|stash|worktree|update-ref|powershell|pwsh|get-content|curl|wget|iwr|invoke-webrequest|invoke-restmethod|truncate|xargs|terraform|tofu|terragrunt|kubectl|helm|pulumi|gcloud|/dev/|secrets|credential|id_rsa|id_dsa|id_ecdsa|id_ed25519|\.env|\.pem|\.key|\.p12|\.pfx|\.ssh|\.netrc|\.aws|\.git-cred|\.docker|\.kube|gh/hosts|tee|>|:[[:space:]]*\(\)|(^|[^a-z])(rm|rd|ri|dd|del|drop|delete|erase|find|aws|az)([^a-z]|$)' <<<"$CMD"; then
     exit 0
 fi
 
@@ -156,6 +156,54 @@ fi
 # Destructive SQL — trailing boundary after the object keyword excludes 'DROP TABLESPACE' over-block.
 if echo "$CMD" | grep -qiE '(drop[[:space:]]+(database|table|schema|index|view)([[:space:]]|;|$)|truncate[[:space:]]+table|delete[[:space:]]+from[[:space:]]+[^[:space:]]+([[:space:]]*$|[[:space:]]*;|[[:space:]]+--))'; then
     block "destructive SQL statement (drop / truncate / delete-from without where)"
+fi
+
+# Destructive Infrastructure-as-Code / orchestration / cloud-CLI commands — the destructive VERB is
+# anchored as a SUBCOMMAND (a bare command word, not a -flag, filename, or resource-name substring), so
+# 'terraform plan -destroy' (a no-op plan) and 'kubectl apply -f delete-old.yaml' (a filename) are NOT
+# over-blocked, while compound ('cd infra && terraform destroy') and flag-form ('terraform -chdir=X
+# destroy', '-auto-approve') bypasses of the settings.json `ask` globs ARE caught. A no-op preview /
+# dry-run (--dry-run=client|server, --preview-only, bare --dry-run — but NOT --dry-run=none, which
+# executes) is excluded: it changes nothing. Read/plan/list/describe/apply verbs pass. Closes the
+# mechanism of the documented Claude-Code 'terraform destroy' production-wipe incident. Residual
+# (documented, not chased — same class as the rm/git matchers): shell quote-obfuscation (terra'form'),
+# variable-indirection ($TF destroy), hyphenated cloud subverbs (aws ecr batch-delete-image, az ...
+# delete-batch), terraform state rm / workspace delete (state-only, recoverable). settings.json complements.
+IAC_NOOP=0
+if printf '%s' "$CMD" | grep -qiE -- '--dry-run=(client|server)|--preview-only|--dry-run([[:space:]]|$)'; then IAC_NOOP=1; fi
+# terraform / OpenTofu / terragrunt: the 'destroy' subcommand (always destructive), or 'apply' with -auto-approve.
+if printf '%s' "$CMD" | grep -qiE '(terraform|tofu|terragrunt)[[:space:]]([^|;&]*[[:space:]])?(destroy([[:space:]]|$)|apply[^|;&]*--?auto-approve)'; then
+    block "IaC destroy / auto-approved apply (terraform/tofu/terragrunt — irreversible infrastructure teardown)"
+fi
+# Kubernetes bulk deletion: the 'delete' subcommand + a mass scope (--all, label -l/--selector, -f/-k
+# manifest|kustomize, or a namespace target). Targeted single-resource delete defers to the ask-list
+# (mirrors the rm scope-discipline). A --dry-run=client|server preview is not blocked.
+if [ "$IAC_NOOP" = 0 ] && printf '%s' "$CMD" | grep -qiE 'kubectl[[:space:]]([^|;&]*[[:space:]])?delete([[:space:]]|$)' \
+   && printf '%s' "$CMD" | grep -qiE '(--all|--all-namespaces|-l([[:space:]=]|$)|--selector|-f([[:space:]=]|$)|--filename|-k([[:space:]=]|$)|--kustomize|(^|[[:space:]])(namespace|namespaces|ns)([[:space:]/]))'; then
+    block "kubectl bulk delete (--all / label-selector / -f|-k manifest / namespace — bulk cluster-state deletion)"
+fi
+# helm release removal (uninstall, or its legacy 'delete' alias) — subcommand-anchored.
+if [ "$IAC_NOOP" = 0 ] && printf '%s' "$CMD" | grep -qiE 'helm[[:space:]]([^|;&]*[[:space:]])?(uninstall|delete)([[:space:]]|$)'; then
+    block "helm release uninstall/delete (tears down a deployed release)"
+fi
+# Pulumi teardown: the 'destroy' subcommand or 'stack rm'.
+if [ "$IAC_NOOP" = 0 ] && printf '%s' "$CMD" | grep -qiE 'pulumi[[:space:]]([^|;&]*[[:space:]])?(destroy([[:space:]]|$)|stack[[:space:]]+rm([[:space:]]|$))'; then
+    block "pulumi destroy / stack rm (irreversible stack teardown)"
+fi
+# Cloud-CLI resource deletion — the destructive verb is anchored on a LEADING SPACE so a resource NAME
+# containing 'delete-' (e.g. 's3://my-delete-logs-bucket') does NOT false-trip. aws delete-* /
+# terminate-instances / s3 rb / s3 rm --recursive; gcloud & az '<resource> delete'. An aws --dry-run
+# permission check is not blocked.
+if [ "$IAC_NOOP" = 0 ] && printf '%s' "$CMD" | grep -qiE '(^|[^a-z])aws[[:space:]][^|;&]*[[:space:]](delete-[a-z]|terminate-instances|rb([[:space:]]|$)|rm[[:space:]][^|;&]*--recursive)'; then
+    block "aws destructive resource delete (delete-* / terminate-instances / s3 rb / s3 rm --recursive)"
+fi
+if [ "$IAC_NOOP" = 0 ] && printf '%s' "$CMD" | grep -qiE '(^|[^a-z])(gcloud|az)[[:space:]][^|;&]*[[:space:]]delete([[:space:]]|$)'; then
+    block "gcloud/az cloud resource delete (resource teardown)"
+fi
+# gcloud storage / gsutil recursive object delete on a gs:// target — rm-shaped, so the local-rm scope check misses it.
+if printf '%s' "$CMD" | grep -qiE '(gcloud[[:space:]][^|;&]*storage[[:space:]]([^|;&]*[[:space:]])?rm([[:space:]]|$)|gsutil[[:space:]]([^|;&]*[[:space:]])?rm([[:space:]]|$))' \
+   && printf '%s' "$CMD" | grep -qiE -- '-r([[:space:]]|$)|--recursive'; then
+    block "gcloud storage / gsutil recursive delete (bucket/object teardown)"
 fi
 
 # Fork bomb — whitespace-tolerant regex (the literal case-glob was evadable by spacing/renaming).
