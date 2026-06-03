@@ -1,7 +1,7 @@
 ---
 name: agent-creator
 effort: high
-description: "Authors one new kit subagent — researched, justified by a demonstrated mistake, read-only-by-default for verifiers, size-capped, coherent frontmatter. Invoke to create an agent; not for a check the main loop already does well."
+description: "Authors one new kit subagent — researched, justified by a demonstrated mistake, no-edit-by-default for verifiers, size-capped, coherent frontmatter. Invoke to create an agent; not for a check the main loop already does well."
 argument-hint: "<the agent to create: the recurring mistake it should prevent>"
 disable-model-invocation: true
 allowed-tools:
@@ -47,7 +47,7 @@ When the agent's lens depends on domain facts, current tools, or real failure mo
 
 - `description`: under ~250 characters (the catalog signal used to dispatch the agent); lead with the trigger (when to invoke it) and keep the agent's method in the body — a workflow-recap description invites dispatching on the summary and skipping the body.
 - `tools`: exactly what the body uses — if the body says "write the report," `Write` is listed; a body claiming an action whose tool is absent is the incoherence to catch.
-- `disallowedTools`: the writes and destructive operations the agent must never perform — especially the full set for a read-only verifier.
+- `disallowedTools`: the writes and destructive operations the agent must never perform — especially the full set for a non-editing verifier.
 - Set `model` and `permissionMode` deliberately; keep a verifier agent in the 1200–3000 token band. Measure the size (`wc -m` ÷ 4) after writing.
 
 ## Self-verify, then stop at the artifact

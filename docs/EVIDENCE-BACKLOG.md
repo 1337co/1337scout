@@ -15,6 +15,7 @@ An element may exceed its load-frequency tier when its justification is recorded
 | `rules/autonomous-mode.md` | rule 100–400 | conditional always-loaded adapter — no path-filter can detect autonomous/background mode at hook-fire time, so it stays always-loaded; the loop / cache-window / signal-order / irreversible-gate discipline is load-bearing. |
 | `rules/kit-authoring.md` | rule 100–400 | path-filtered (loads only on kit-file edits) — the complex per-edit adapter carrying the full checklist + the consult gate. |
 | `output-styles/kit-default.md` | 200–400 | always-loaded chat-output discipline + the evidence-preserving-brevity principle (cut commentary first, never the observable). |
+| `skills/agent-creator/SKILL.md` | skill 500–1500 | meta-authoring orchestrator (sibling to `skill-creator`): the multi-step agent-authoring procedure — research → designate verifier → frontmatter coherence → size-cap the child — earns the constitution's tool-workflow-skill ≤2500 headroom; ~1542 tok, flagged in `caps.tsv`. |
 
 ## Evidence schema (per anchored rule)
 

@@ -118,13 +118,13 @@ Concretely, after a `FAIL` verdict — the counter-intuitive part is that the ki
 
 > **Independently scored 8.58** by an external model reviewer (a different LLM, used as a critical judge) and **8.88** — the mean of **three independent Claude agents, each scoring in a completely separate, isolated context** (no shared memory, no cross-talk, no access to each other's verdicts) — on a multi-dimension discipline rubric *(a one-time internal A/B; the rubric and scores are not committed to this repo — see [Evidence at a glance](#evidence-at-a-glance) and [honest limits](#honest-limits))*. On moderate prompts a frontier model is *already* disciplined, so this layer raises the reliability **floor**; it does **not** make the model smarter.
 
-### 3 · Verification that is read-only by construction
+### 3 · Verification that can't edit the work it judges
 
 Ten single-purpose adversarial verifier agents, each in its own context. Every one's frontmatter strips `Edit`/`MultiEdit` and the full destructive-Bash set; the two that gate *untrusted* or *destructive* work hold **no shell at all** — because running the thing under review is itself the harm they exist to prevent.
 
 ```mermaid
 flowchart LR
-    W(["Claude: 'done — tests pass'"]) --> VA["verifier agent · isolated context<br/>read-only by construction:<br/>Edit + destructive-Bash stripped<br/>(the 2 untrusted/destructive gates hold no shell)"]
+    W(["Claude: 'done — tests pass'"]) --> VA["verifier agent · isolated context<br/>can't edit the reviewed code:<br/>Edit + destructive-Bash stripped<br/>(Write kept only for its verdict report;<br/>the 2 untrusted/destructive gates hold no shell)"]
     VA --> VD{"re-runs the real checks itself —<br/>not the self-report"}
     VD -->|"observables hold up"| OK(["PASS — confirmed by what ran"])
     VD -->|"observables do not"| NO(["FAIL — overrides the 'done' claim"])
@@ -204,9 +204,9 @@ Where "done" could hide a hole, three mechanisms close it without relying on the
 
 1. The advisory `broken-marker-gate` hook scans **only the added lines** of a write and surfaces a leftover stub the instant it's written — wired `PostToolUse` on `Write|Edit|MultiEdit`. Advisory and fail-open (exit 0 — it surfaces, it does not block).
 2. `/build`'s contract makes *"verified at layer X, gap at layer Y"* **two honest facts**, never one collapsed "done," and routes any leftover stub to **BLOCKED with the gap named** ([`build/SKILL.md`](.claude/skills/build/SKILL.md)).
-3. A read-only verifier — which **cannot edit or commit** the work under review (`Edit`/`MultiEdit` + destructive-Bash stripped in frontmatter; the two that gate untrusted/destructive work hold *no shell at all*) — has the observable-anchored word: *"the verifier's verdict takes precedence over the executor's self-report"* ([`tester.md`](.claude/agents/tester.md)).
+3. A verifier — which **cannot edit or commit** the work under review (`Edit`/`MultiEdit` + destructive-Bash stripped in frontmatter; the two that gate untrusted/destructive work hold *no shell at all*) — has the observable-anchored word: *"the verifier's verdict takes precedence over the executor's self-report"* ([`tester.md`](.claude/agents/tester.md)).
 
-All three trace to the kernel's *prove-it-done* axiom — *"an approximation reported as verified … a false claim, not a partial one"* (see [verification, above](#3--verification-that-is-read-only-by-construction)).
+All three trace to the kernel's *prove-it-done* axiom — *"an approximation reported as verified … a false claim, not a partial one"* (see [verification, above](#3--verification-that-cant-edit-the-work-it-judges)).
 
 > *Honest limit, unchanged:* these are **design** properties (footprint discipline, lazy-loading, data-driven routing, verifier construction) — **not** a measured token total or a per-prompt accuracy gain; no "saves N tokens" figure is claimed. On moderate prompts the prose-discipline edge over a clean frontier model is ~edge-absent; the value here is structural, and shows up most in long, autonomous, high-stakes sessions ([see Honest limits](#honest-limits)).
 
@@ -337,7 +337,7 @@ The live set is **12 skills · 10 agents · 7 hooks · 1 custom MCP · 5 rules**
 │   ├── output-styles/kit-default.md   # chat-output discipline
 │   ├── rules/                    # 5 path-loaded discipline rules
 │   ├── skills/                   # 12 user-invoked  (scout = the router)
-│   ├── agents/                   # 10 isolated, read-only verifiers
+│   ├── agents/                   # 10 isolated verifiers — can't edit the reviewed code
 │   ├── hooks/  (+ lib/)          # 7 — the mechanical layer
 │   └── mcp/evidence-ledger/      # the kit's one custom MCP
 ├── docs/                         # KIT-CONSTITUTION · ON-GRAIN-METHOD · EVIDENCE-BACKLOG
@@ -358,10 +358,10 @@ The live set is **12 skills · 10 agents · 7 hooks · 1 custom MCP · 5 rules**
 | `/mcp-setup` | Wires your real stack to vetted, maintained MCP servers (repo, browser, DB, cloud) — points at capability, doesn't reinvent it. |
 | `/scan-setup` | Wires the repo to maintained **deterministic** scanners (SAST, CVE/SBOM, secret-history, IaC, mutation, fuzz) — vendored and run, never LLM-faked. |
 | `/skill-creator` | Authors one new kit skill the kit's own way (researched, justified by a real mistake, size-capped). |
-| `/agent-creator` | Authors one new kit verifier agent (read-only by default, size-capped). |
+| `/agent-creator` | Authors one new kit verifier agent (no-edit by default, size-capped). |
 | `/kit-audit` | Audits the kit against itself **and seeds fake canaries to prove the safety hooks actually fire** — emits a PASS/FAIL scorecard. Run before trusting it. |
 
-**Agents** — `.claude/agents/` · isolated read-only verifiers, invoked `@name`
+**Agents** — `.claude/agents/` · isolated verifiers (can't edit the work they review), invoked `@name`
 
 Each runs in its own context, judges from observable evidence, and its verdict overrides the executor's "done." None can edit the work it reviews.
 
@@ -441,7 +441,7 @@ Two large public kit archetypes dominate; compared on the same rubric:
 | Shipped & battle-tested at scale | **not yet** | ✅ | ✅ |
 | Discipline-purist rubric † | **8.58 / 8.88** | 6.85 | 5.0 |
 
-> **†** The comparison is about design bets, not universal quality. One archetype emphasizes process discipline; another emphasizes breadth. 1337scout is narrower: deterministic safety hooks, single routing, read-only verification, and explicit self-audit. **Only this kit's score is first-hand measured here** — the other scores are rubric assessments of published materials, not runtime head-to-head tests.
+> **†** The comparison is about design bets, not universal quality. One archetype emphasizes process discipline; another emphasizes breadth. 1337scout is narrower: deterministic safety hooks, single routing, non-editing verification, and explicit self-audit. **Only this kit's score is first-hand measured here** — the other scores are rubric assessments of published materials, not runtime head-to-head tests.
 
 The process-skill archetype is genuine: an independent author converged on nearly the same discipline philosophy (verification-before-completion, root-cause-before-fix, "3 failed fixes = wrong approach") — strong validation that this is the *discovered shape* of pressure-resistant discipline, and it shipped at scale. 1337scout's narrower addition is the mechanical floor, the anti-sycophancy axiom, the single routing command, and a self-governing constitution. The capability archetype's own best discipline is *also* mechanical — which is exactly this kit's thesis.
 

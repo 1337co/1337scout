@@ -11,7 +11,7 @@ Report security issues **privately** — please do not open a public issue for a
 The most useful reports describe a concrete way to defeat a guarantee the kit *does* make, for example:
 - a way to get a destructive command or a secret-write past the `PreToolUse` hooks (`boundary-guard`, `secret-scanner`) so it reaches execution;
 - a destructive / exfil command **shape** the matchers miss (a genuine new bypass class);
-- a way to make a read-only verifier agent rubber-stamp unsafe work;
+- a way to make a non-editing verifier agent rubber-stamp unsafe work;
 - a supply-chain issue in the `npx` installer or the published package.
 
 Please include a minimal reproduction and the affected version. We aim to acknowledge within a few days.
