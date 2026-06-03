@@ -7,7 +7,7 @@
 ![platform: Claude Code](https://img.shields.io/badge/platform-Claude%20Code-blue)
 ![safety gate: 24/24 caught · 0 FP](https://img.shields.io/badge/safety%20gate-24%2F24%20caught%20%C2%B7%200%20FP-success)
 ![discipline rubric: 8.58 · 8.88](https://img.shields.io/badge/discipline%20rubric-8.58%20%C2%B7%208.88-brightgreen)
-![hook latency: <1s](https://img.shields.io/badge/hook%20latency-778%2F886ms%20%3C1s-blue)
+![self-governing: 13-axiom constitution](https://img.shields.io/badge/self--governing-13--axiom%20constitution-blueviolet)
 ![license: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ## What you get — in plain terms
@@ -20,7 +20,7 @@
 - **Your rules actually stick.** The kit's instructions are re-applied every turn instead of fading as the conversation grows.
 - **It stays out of your way.** Only a small core is always loaded; everything else loads when you use it — so your context window and token budget stay yours.
 - **A hard floor underneath.** The catastrophic moves — wiping files, force-pushing a shared branch, writing a live API key to disk — are blocked *before* they run, mechanically, not by hoping the model behaves.
-- **Honest about its limits.** On easy prompts a top model is already careful; this kit earns its place in long, autonomous, high-stakes work — no "makes the AI a genius" claims. The clean, measured win is that safety floor.
+- **Honest about its limits.** On easy prompts a top model is already careful; this kit earns its place in long, autonomous, high-stakes work — no "makes the AI a genius" claims. What's distinctive is the *method* — the routing and the self-governing discipline; the safety floor underneath is simply the part that's mechanically, re-runnably proven.
 
 > **Most kits add capability** — which a frontier model increasingly has natively, so the pile adds context and needs upkeep as models change. **1337scout takes the opposite bet:** bring what capability *doesn't* give you — an original way to **route** the model's own work (`/scout`) and a **self-governing discipline method** that keeps it honest — and put a hard safety floor under the two failure modes it cannot self-fix (destructive commands, secret leaks).
 
@@ -46,6 +46,41 @@ flowchart TB
 ```
 
 All four layers sit under one **13-axiom constitution** (the kit's law). The idea: **let Claude be smart, discipline how it works, and put a hard floor under what it must never do.**
+
+---
+
+## Quickstart
+
+1337scout is a **project `.claude/` kit, not a marketplace plugin** — fully self-contained, nothing referenced from outside the folder. It activates when you open a Claude Code session at the directory holding it.
+
+**Requires:** Claude Code (verified on 2.1.160) · Node (the MCP + the installer) · `bash` + `python3` (the hooks' parser + the harness).
+
+**Scaffold it into a project** — one command, nothing fetched at runtime (every file ships in the package):
+
+```bash
+cd your-project
+npx 1337scout           # copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/ in
+claude                  # open a session here — the hooks fire automatically
+```
+
+Refuses to overwrite **any** existing kit item (`.claude/`, `CLAUDE.md`, `.mcp.json`, `docs/`, `scripts/`) — `--force` to override, `--dry-run` to preview. Pin for reproducible installs: `npx 1337scout@0.1.2`.
+
+**Or clone** — the repo root IS the kit (standalone use, or to work on the kit itself):
+
+```bash
+git clone https://github.com/1337co/1337scout.git
+cd 1337scout
+claude
+```
+
+```bash
+bash scripts/mechanical-regression.sh    # prove the floor is live (asserts exit codes)
+# → defect-catch 24/24, benign-allow 10/10 — PASS
+```
+
+Then drive it: `/scout` when the next step is unclear, or any skill directly (`/forge`, `/chart`, `/build`, `/debug`, `/tdd`). Skills are never auto-invoked — you call them.
+
+> **Activation caveat:** launching from a *parent* directory activates that directory's `.claude/` only; the kit stays dormant. Open at the kit root. On a Claude Code version bump, re-run `scripts/on-upgrade-regression.sh` — a harness change can silently break the isolation the hooks rely on.
 
 ---
 
@@ -104,7 +139,7 @@ The verifier cannot edit-in-place or commit the work it judges — `Edit`/`Multi
 
 ### 4 · Self-governance and self-falsification
 
-A 13-axiom constitution governs the kit's own evolution (authority hierarchy, a 10-point element-addition test, per-element token caps). `/kit-audit` seeds fake secret canaries and destructive commands to prove the hooks fire — and is **built to be able to FAIL the kit**: a generic model refusal scores `INCONCLUSIVE`, not a pass; a canary reaching disk is a `CRITICAL FAIL`.
+Two things govern the kit's own evolution. A **13-axiom constitution** sets the law — authority hierarchy, a 10-point element-addition test, per-element token caps. And one authoring method, **On-Grain** ([`docs/ON-GRAIN-AUTHORING-METHOD.md`](docs/ON-GRAIN-AUTHORING-METHOD.md)), decides what may exist at all: a line earns its place *only* by naming the specific, demonstrated mistake it prevents — otherwise it's cut. That method, more than any single hook, is the kit's real signature and why it stays lean as it grows. `/kit-audit` then turns the governance on the kit itself — it seeds fake secret canaries and destructive commands to prove the hooks fire, and is **built to be able to FAIL the kit**: a generic model refusal scores `INCONCLUSIVE`, not a pass; a canary reaching disk is a `CRITICAL FAIL`.
 
 ### 5 · A deterministic safety floor — the base, not the pitch
 
@@ -284,38 +319,7 @@ This is the *behavioral* floor, not the measured mechanical win: on an easy, wel
 
 ---
 
-## Quickstart
-
-1337scout is a **project `.claude/` kit, not a marketplace plugin** — fully self-contained, nothing referenced from outside the folder. It activates when you open a Claude Code session at the directory holding it.
-
-**Requires:** Claude Code (verified on 2.1.160) · Node (the MCP + the installer) · `bash` + `python3` (the hooks' parser + the harness).
-
-**Scaffold it into a project** — one command, nothing fetched at runtime (every file ships in the package):
-
-```bash
-cd your-project
-npx 1337scout           # copies .claude/, CLAUDE.md, .mcp.json, docs/, scripts/ in
-claude                  # open a session here — the hooks fire automatically
-```
-
-Refuses to overwrite **any** existing kit item (`.claude/`, `CLAUDE.md`, `.mcp.json`, `docs/`, `scripts/`) — `--force` to override, `--dry-run` to preview. Pin for reproducible installs: `npx 1337scout@0.1.2`.
-
-**Or clone** — the repo root IS the kit (standalone use, or to work on the kit itself):
-
-```bash
-git clone https://github.com/1337co/1337scout.git
-cd 1337scout
-claude
-```
-
-```bash
-bash scripts/mechanical-regression.sh    # prove the floor is live (asserts exit codes)
-# → defect-catch 24/24, benign-allow 10/10 — PASS
-```
-
-Then drive it: `/scout` when the next step is unclear, or any skill directly (`/forge`, `/chart`, `/build`, `/debug`, `/tdd`). Skills are never auto-invoked — you call them.
-
-> **Activation caveat:** launching from a *parent* directory activates that directory's `.claude/` only; the kit stays dormant. Open at the kit root. On a Claude Code version bump, re-run `scripts/on-upgrade-regression.sh` — a harness change can silently break the isolation the hooks rely on.
+## The full element set
 
 <details open>
 <summary><b>Every element — what it does and where it lives</b> (click to collapse)</summary>
