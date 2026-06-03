@@ -1,0 +1,43 @@
+name: Element / change proposal
+description: Propose a new kit element or a change — held to the kit's inclusion bar
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The kit is deliberately small. Every line must name the **demonstrated mistake it prevents** (the On-Grain inclusion test — see docs/ON-GRAIN-AUTHORING-METHOD.md). Capability/feature additions that turn the kit into a tool library are declined.
+  - type: textarea
+    id: mistake
+    attributes:
+      label: The demonstrated failure this prevents
+      description: The concrete, reproducible mistake. "Be careful" reminders and hypotheticals are declined.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The change
+      description: What you would add or change, and at which surface.
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Element type
+      options:
+        - skill
+        - agent
+        - rule
+        - hook
+        - MCP
+        - doc
+        - other
+  - type: checkboxes
+    id: bar
+    attributes:
+      label: Bar
+      options:
+        - label: It weakens no safety invariant (credential / destructive-action / intent-evidence / scope gates).
+          required: true
+        - label: It is discipline, not a capability / tool-library addition.
+          required: true

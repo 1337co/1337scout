@@ -1,0 +1,44 @@
+name: Bug report
+description: A hook, skill, agent, or the installer misbehaves
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Security issue** (a way to bypass a safety hook)? Do NOT use this form — report it privately, see SECURITY.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What the kit did versus what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Exact steps, the prompt, or the command. A minimal repro is gold.
+    validations:
+      required: true
+  - type: input
+    id: kit-version
+    attributes:
+      label: Kit version
+      placeholder: "1337scout@0.1.2"
+    validations:
+      required: true
+  - type: input
+    id: cc-version
+    attributes:
+      label: Claude Code version
+      placeholder: "e.g. 2.1.160"
+  - type: input
+    id: os
+    attributes:
+      label: OS / shell
+      placeholder: "e.g. macOS 15 / zsh, Windows 11 / git-bash"
+  - type: textarea
+    id: regression
+    attributes:
+      label: Safety regression output (if relevant)
+      description: "Output of: bash scripts/mechanical-regression.sh"
