@@ -3,9 +3,9 @@
 /*
  * 1337scout installer — scaffolds the kit into a project directory.
  * Zero dependencies (Node built-ins only). Fetches nothing from the network:
- * every file ships inside this npm package. Refuses to overwrite an existing
- * .claude/ or CLAUDE.md unless --force (the kit's own blast-radius discipline,
- * applied to its own installer).
+ * every file ships inside this npm package. Refuses to overwrite any existing
+ * kit item unless --force (the kit's own blast-radius discipline, applied to its
+ * own installer), and git-ignores the kit's runtime-state dirs in the target.
  */
 const fs = require('fs');
 const path = require('path');
@@ -38,7 +38,7 @@ Options:
   -h, --help         Show this help.
 
 Nothing is downloaded — every file ships inside this package. Pin a version for
-reproducible installs, e.g.  npx 1337scout@0.1.0`;
+reproducible installs, e.g.  npx 1337scout@0.1.2`;
 
 function parseArgs(argv) {
   const a = { target: null, force: false, dryRun: false, help: false, withReadme: false };
@@ -51,6 +51,25 @@ function parseArgs(argv) {
     else { console.error(`[1337scout] unknown argument: ${t}`); return null; }
   }
   return a;
+}
+
+function ensureGitignore(target) {
+  // The kit writes runtime state into the project — the evidence-ledger MCP's
+  // .claude/state/receipts.jsonl and the compaction backup's .kit-state/. Make sure
+  // both are git-ignored so a user never accidentally commits them. Idempotent and
+  // additive: appends only the entries that are missing; creates .gitignore if absent.
+  const gi = path.join(target, '.gitignore');
+  const need = ['.claude/state/', '.kit-state/'];
+  let cur = '';
+  try { cur = fs.readFileSync(gi, 'utf8'); } catch (_) {}
+  const have = new Set(cur.split(/\r?\n/).map((l) => l.trim()));
+  const missing = need.filter((e) => !have.has(e));
+  if (!missing.length) return [];
+  const block = (cur && !cur.endsWith('\n') ? '\n' : '') +
+    '\n# 1337scout runtime state (verifier receipts, compaction backups) — never commit\n' +
+    missing.join('\n') + '\n';
+  fs.appendFileSync(gi, block);
+  return missing;
 }
 
 function main() {
@@ -89,6 +108,9 @@ function main() {
     const readme = path.join(PKG_ROOT, 'README.md');
     if (fs.existsSync(readme)) fs.copyFileSync(readme, path.join(target, '1337scout-README.md'));
   }
+
+  const ignored = ensureGitignore(target);
+  if (ignored.length) console.log(`[1337scout] git-ignored runtime state in target: ${ignored.join(', ')}`);
 
   console.log('\n[1337scout] installed. Next:');
   console.log('  claude                                  # open a session here; hooks fire automatically');

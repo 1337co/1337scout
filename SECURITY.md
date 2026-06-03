@@ -21,7 +21,15 @@ Please include a minimal reproduction and the affected version. We aim to acknow
 
 - The two `PreToolUse` hooks block a defined set of destructive commands and secret-write patterns **before** they run, fail-CLOSED, verified by `bash scripts/mechanical-regression.sh` (24/24 seeded defects caught, 0 false positives on 10 benign).
 - They are **one layer of three** (a permission deny/ask list + the two hooks), explicitly **not** a sandbox or an absolute guarantee. The hooks document their own residual gaps in-file (e.g. encoded secrets, sudo-wrapped device writes).
-- The kit makes **no network requests at runtime** except the Anthropic API (via Claude Code). `npx 1337scout` fetches the package from the npm registry at install time only.
+- The kit's own scripts and hooks make **no network requests** — they read and pattern-match locally. (Claude Code's built-in `WebSearch`/`WebFetch` tools, which the kit leaves enabled, are a *separate* egress surface that the kit neither adds nor restricts — don't read "no network" as "Claude can't reach the web.") `npx 1337scout` fetches the package from the npm registry at install time only; nothing is fetched at runtime.
+
+## Runtime state & privacy
+The kit writes two local, git-ignored artifacts (the `npx` installer adds both to your project's `.gitignore`; a cloned repo already ignores them):
+
+- `.claude/state/receipts.jsonl` — the evidence-ledger MCP's verdict receipts. **Observables only**: the server rejects secret-shaped values, and a receipt is meant to hold a hash, a path, a count, or a PASS/FAIL line — never a credential.
+- `.kit-state/` — state backed up before a context compaction and restored after it.
+
+Both are local files on your machine, sent nowhere. To wipe them, delete those paths. Never place a credential value in a receipt.
 
 ## What is *not* a vulnerability
 - The honest behavioral limits stated in the README (the prose-discipline layer's edge being small on moderate prompts) are documented design facts, not security issues.

@@ -1,0 +1,45 @@
+name: CI
+
+# The kit's claims rest on reproducible checks — so run them on every push/PR,
+# not just on the maintainer's machine. (This workflow ships on GitHub only; it
+# is excluded from the npm package via the package.json files[] allowlist + .npmignore.)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Syntax-check the JS (installer + MCP server)
+        run: |
+          node --check bin/install.js
+          node --check .claude/mcp/evidence-ledger/server.js
+
+      - name: Mechanical safety regression (must catch 24/24, 0 false positives)
+        run: bash scripts/mechanical-regression.sh
+
+      - name: Constitution / adapter drift lint (must exit 0)
+        run: bash scripts/adapter-sync-lint.sh
+
+      - name: Installer smoke — dry-run, real install, and runtime-state gitignore
+        run: |
+          mkdir -p /tmp/kit-smoke
+          node bin/install.js --dry-run /tmp/kit-smoke
+          node bin/install.js /tmp/kit-smoke
+          test -f /tmp/kit-smoke/CLAUDE.md
+          test -d /tmp/kit-smoke/.claude
+          grep -q '\.kit-state/' /tmp/kit-smoke/.gitignore
+          echo "installer smoke OK — scaffolded and git-ignored runtime state"
+
+      - name: ShellCheck the hooks and scripts (informational, non-blocking)
+        run: |
+          sudo apt-get update -y >/dev/null 2>&1 && sudo apt-get install -y shellcheck >/dev/null 2>&1 || true
+          shellcheck -S warning .claude/hooks/*.sh .claude/hooks/lib/*.sh scripts/*.sh || true
