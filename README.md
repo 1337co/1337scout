@@ -12,7 +12,7 @@
 
 ## What you get — in plain terms
 
-**Not a smarter Claude — a more reliable one.** Same model, same brain; the kit just gives it more disciplined hands. You won't see it on an easy one-off prompt — but over real, long, or high-stakes work, that reliability is what turns into genuinely better results:
+**The model is already brilliant — the hard part is making it *reliable*. That's what this kit does.** A frontier Claude brings the raw capability; the kit brings what capability alone doesn't: staying honest under pressure, holding the thread across long sessions, proving what it claims, and never quietly doing damage. On real, long, high-stakes work, that reliability is what turns into genuinely better results:
 
 - **Stop memorizing commands.** Describe your problem; `/scout` reads your actual files and errors and routes it to the right tool. There's no command list to learn.
 - **It stays honest under pressure.** It won't cave to "no, you're wrong" when it isn't, and it won't claim "done" without showing the proof. You get a straight answer, not a yes-man.
