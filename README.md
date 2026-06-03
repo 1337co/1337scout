@@ -28,17 +28,19 @@
 
 ```mermaid
 flowchart TB
-    U(["You prompt Claude"]) --> K["Discipline kernel, always on<br/>evidence · prove-it-done · hold under pressure"]
-    K --> M(["Claude works on your task"])
-    M -->|"runs a command / writes a file"| H{"PreToolUse<br/>safety hook"}
-    H -->|"dangerous or secret"| BLK(["⛔ blocked — exit 2, before it runs"])
-    H -->|"safe"| RUN(["✅ runs normally"])
-    M -->|"next step is unclear"| S(["/scout routes to the right element"])
-    M -->|"claims it is 'done'"| V(["read-only verifier checks — its verdict wins"])
+    U(["You ask Claude for something"]) --> M["Claude works on it — the kit's discipline is always on:<br/>stays honest, stays on task, won't fold under pressure"]
+    M --> Q{"what kind of step?"}
+    Q -->|"not sure what to do next"| S(["/scout reads your files + errors<br/>and picks the right approach"])
+    Q -->|"about to do real damage<br/>wipe files · leak a key · force-push"| BLK(["stopped before it runs"])
+    Q -->|"says it's done"| V(["a separate checker re-runs the proof —<br/>its verdict beats the 'done' claim"])
+    Q -->|"safe, ordinary work"| RUN(["just runs"])
     classDef danger fill:#fdecea,stroke:#e23,color:#900;
     classDef ok fill:#eafaf0,stroke:#2a2,color:#063;
+    classDef route fill:#eef4ff,stroke:#36c,color:#024;
     class BLK danger
     class RUN ok
+    class S route
+    class V route
 ```
 
 All four layers sit under one **13-axiom constitution** (the kit's law). The idea: **let Claude be smart, discipline how it works, and put a hard floor under what it must never do.**
